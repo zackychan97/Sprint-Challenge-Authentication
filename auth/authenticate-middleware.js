@@ -1,25 +1,23 @@
-/* 
-  complete the middleware code to check if the user is logged in
-  before granting access to the next middleware/route handler
-*/
-const jwt = require('jsonwebtoken'); 
+  
+const jwt = require("jsonwebtoken");
+const secret = require('./secret');
 
 module.exports = (req, res, next) => {
-    const { authorization } = req.headers;
+  const token = req.headers.authorization;
+  console.log("restricted-middleware", token, req.headers);
 
-    if (authorization) {
-      const secret = process.env.JWT_SECRET;
-
-      jwt.verify(authorization, secret, function(err, decodedToken) {
-        if (err) {
-          res.status(401).json({ you: 'shall not pass!' });
-        } else {
-          req.token = decodedToken;
-
-          next();
-        }
-      });
-    } else {
-      res.status(400).json({ message: 'Login and try again, please.' });
-    }
+  if (token) {
+    jwt.verify(token, secret, (err, decodedToken) => {
+      if (err) {
+        console.log('failed verify', err);
+        res.status(401).json({ message: 'cannot verify token' });
+      } else {
+        // token is valid
+        req.decodedToken = decodedToken;
+        next();
+      }
+    });
+  } else {
+    res.status(400).json({ message: 'No token provided' });
+  }
 };

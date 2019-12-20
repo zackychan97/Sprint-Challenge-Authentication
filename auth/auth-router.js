@@ -1,52 +1,60 @@
 const router = require('express').Router();
 
+require('dotenv').config();
+const Users = require('./auth-model');
 const bcrypt = require('bcryptjs');
-
-const signToken = require('../JWT/signToken'); // get signtoken
-
-const userDb = require('../models/userDb');
-
+const jwt = require('jsonwebtoken');
 
 router.post('/register', (req, res) => {
-  // implement registration
   let user = req.body;
+  const hash = bcrypt.hashSync(user.password, 10);
+  user.password = hash;
 
-    const hash = bcrypt.hashSync(user.password, 8);
-
-    user.password = hash;
-
-    userDb.add(user)
-      .then(stored => {
-        res.status(200).json(stored);
-      })
-      .catch(err => {
-        res.status(500).json(err);
-      })
+  Users.add(user)
+    .then(({ id }) => {
+      res.status(201).json({ status: 201, message: id });
+    })
+    .catch(error => {
+      res.status(500).json({ error: error, message: 'registration failed' });
+    });
 });
 
 router.post('/login', (req, res) => {
-  // implement login
   let { username, password } = req.body;
 
-  userDb.getBy({ username })
+  Users.findBy({ username })
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
-        //sign token
+        // sign in token
         const token = signToken(user);
-
         //send the token
         res.status(200).json({
           token,
-          message: `Welcome ${user.username}!`,
+          message: `Get Loose ${user.username}!`,
         });
       } else {
-        res.status(401).json({ message: "Invalid Credentials" });
+        res.status(401).json({ message: 'Invalid Credentials' });
       }
     })
     .catch(error => {
-      res.status(500).json({message: "There was an error logging in", error});
-      });
+      res.status(500).json({ error: "Unable to Login User", error });
+    });
 });
+
+function signToken(user) {
+  const payload = {
+    // header payload and verify signature
+    // payload -> username, id, roles, exp date
+    username: user.username,
+    subject: user.id,
+    // role: user.role,
+  }
+  const secret = process.env.SECRET || "this is my secret, i like ketchup on my eggs.";
+  const options = {
+    expiresIn: '1h',
+  };
+  return jwt.sign(payload, secret, options)
+}
 
 module.exports = router;
