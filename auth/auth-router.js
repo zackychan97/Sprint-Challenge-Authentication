@@ -1,5 +1,12 @@
 const router = require('express').Router();
 
+const bcrypt = require('bcryptjs');
+
+const signToken = require('../JWT/signToken'); // get signtoken
+
+const userDb = require('../models/userDb');
+
+
 router.post('/register', (req, res) => {
   // implement registration
 });
