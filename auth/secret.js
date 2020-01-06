@@ -1,1 +1,0 @@
-module.exports = process.env.SECRET || "this is my secret, i like ketchup on my eggs."

@@ -11,7 +11,7 @@ const server = express();
 server.use(helmet());
 server.use(cors());
 server.use(express.json());
-server.use(logger);
+// server.use(logger);
 
 server.use('/api/auth', authRouter);
 server.use('/api/jokes', authenticate, jokesRouter);
@@ -21,10 +21,10 @@ server.get('/', (req, res) => {
     res.json({ message });
 });
 
-function logger(req, res, next) {
-    const newDate = new Date(Date.now());
-    console.log((`${req.method} to ${req.originalUrl} at ${newDate.toDateString()}, ${newDate.toTimeString()}`))
-    next();
-};
+// function logger(req, res, next) {
+//     const newDate = new Date(Date.now());
+//     console.log((`${req.method} to ${req.originalUrl} at ${newDate.toDateString()}, ${newDate.toTimeString()}`))
+//     next();
+// };
 
 module.exports = server;

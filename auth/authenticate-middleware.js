@@ -1,23 +1,20 @@
-  
 const jwt = require("jsonwebtoken");
-const secret = require('./secret');
+// const secret = require('./secret');
 
 module.exports = (req, res, next) => {
-  const token = req.headers.authorization;
-  console.log("restricted-middleware", token, req.headers);
+  const { authorization } = req.headers;
+  const secret = "this is my secret";
 
-  if (token) {
-    jwt.verify(token, secret, (err, decodedToken) => {
+  if (authorization) {
+    jwt.verify(authorization, secret, function(err, decodedToken) {
       if (err) {
-        console.log('failed verify', err);
-        res.status(401).json({ message: 'cannot verify token' });
+        res.status(401).json({ message: "invalid token" })
       } else {
-        // token is valid
-        req.decodedToken = decodedToken;
+        req.token = decodedToken;
         next();
       }
-    });
+    })
   } else {
-    res.status(400).json({ message: 'No token provided' });
+    res.status(400).json({ message: "Authorization is reqd" })
   }
 };
